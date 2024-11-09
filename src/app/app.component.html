@@ -1,19 +1,44 @@
+<div class="main-container">
 <div class="button-container">
-<button id="bottoneRect" (click)="creaRect()">Rect</button>
-<button id="bottoneCerchio" (click)="creaCircle()">Circle</button>
-<button id="bottoneTri" (click)="creaTriangle()">Triangle</button>
-<button id="bottoneLine" (click)="creaLine()">Line</button>
-<button id="ruota" (click)="ruotare(this.selectedElement)">rotate</button>
-<button id="scala" (click)="scalare(this.selectedElement)">scale</button>
-<button id="clona" (click)="clonare(this.selectedElement)">clone</button>
-<button id="all" (click)="allungaX(this.selectedElement)">stretch x</button>
-
-
+    <div class="button-container-oggetti">
+        <button id="bottoneRect" (click)="creaRect()">Rect</button>
+        <button id="bottoneCerchio" (click)="creaCircle()">Circle</button>
+        <button id="bottoneTri" (click)="creaTriangle()">Triangle</button>
+        <button id="bottoneLine" (click)="creaLine()">Line</button>
+        <button id="nuovoNastro" (click)="creaNastro()">Nastro</button>
+        <button id="nuovoCassone" (click)="creaCassone()">Cassone TR1</button>
+        <button id="nuovoCassone2" (click)="creaCassone2()">Cassone TR2</button>
+        <button id="nuovoDef1" (click)="creaDef1()">DEF1</button> 
+        <button id="nuovoN7DXN7SX" (click)="creaN7DXN7SX()">N7-DX N7-SX</button>
+        <button id="nuovoFC" (click)="creaFineCorsa()">Fine corsa</button>
+        <button id="nuovoLNK" (click)="creaLineaCollegamento()">LNK</button>
+    </div>
+    <div class="svg">
+        <!-- per zoommare in e out si devono moltiplicare o dividere i valori width e height del viewBox -->
+    <svg #svgField xmlns="http://www.w3.org/2000/svg" width="1540"  height="1000" viewBox="0 0 770 500" (mousewheel)="provaZoom($event)">
+    </svg>
+    </div>
+    <div class="button-container-comandi">
+        <button id="ruota" (click)="ruotare(this.selectedElement)">rotate</button>
+        <button id="scala" (click)="scalare(this.selectedElement)">scale</button>
+        <button id="clona" (click)="clonare(this.selectedElement)">clone</button>
+        <button id="zeta" (click)="setZeta()">set z</button>
+        <button id="all" (click)="allungaX(this.selectedElement)">stretch x</button>
+        <button id="del" (click)="cancellaEl(this.selectedElement)">delete</button>
+        <button id="delAll" (click)="cancellaTutto()">delete all</button>
+        <button id="zoomAllOut" (click)="zoommaOut()">zoom out</button>
+        <button id="zoomAllIn" (click)="zoommaIn()">zoom in</button>  
+        <button id="bloccaTutto" (click)="blocca()">Blocca</button>  
+        <button id="sbloccaTutto" (click)="sblocca()">Sblocca</button> 
+    </div>
+</div>
 </div>
 
-<svg #svgField xmlns="http://www.w3.org/2000/svg" width="100%"  height="100%">
+
+
   
-</svg>
+
+
 
 
 
