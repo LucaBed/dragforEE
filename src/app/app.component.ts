@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, ElementRef, Renderer2, ViewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import {CdkDrag} from '@angular/cdk/drag-drop';
+// import {CdkDrag} from '@angular/cdk/drag-drop';
 import { Circle, Line, Polygon, Rect, SVG, Element, Polyline, G  as SVGElement, G} from '@svgdotjs/svg.js';
 import '@svgdotjs/svg.topoly.js'
 import '@svgdotjs/svg.draggable.js';
-import e from 'express';
+
+
 
 
 
@@ -33,8 +34,8 @@ export class AppComponent implements AfterViewInit {
   ingrandimento = 1;
   translation = 0;
   larghezza = 0;
-  zoomOut = 1;
-  zoomIn = 1;
+  // zoomOut = 0;
+  // zoomIn = 0;
   //draggoPuntoX2 = 0;
   xStretchata = 1;
   quadrato!: SVGElement;
@@ -44,6 +45,14 @@ export class AppComponent implements AfterViewInit {
   listaRect = [];
   listaSelezionati: SVGElement[] = [];
   uCreato!: SVGElement;
+  vb_min_x = 0;
+  vb_min_y = 0;
+  vb_width = 1540;
+  vb_height = 1000;
+  gruppoStatico1!: G;
+  
+
+
   
 
   constructor(private renderer: Renderer2){}
@@ -52,7 +61,37 @@ export class AppComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     
     this.draw = SVG().addTo(this.svgField.nativeElement)
+    
+    this.draw.viewbox(this.vb_min_x, this.vb_min_y, this.vb_width, this.vb_height)
+
+    console.log("Larghezza svg:", this.draw.node.height.animVal.value)
+    console.log("Larghezza svg:", this.draw.node.width.animVal.value)
+
+    const hSVG = this.draw.node.height.animVal.value
+    const wSVG = this.draw.node.width.animVal.value
+
+    // Prendo un gruppo statico e lo rendo draggabile
+
+    // @ts-ignore
+     this.gruppoStatico1 = SVG("#cmap_nastro_n11-rsx_n11-rdx")
+    console.log("Vediamo prova?", this.gruppoStatico1)
+
+    // @ts-ignore
+    this.gruppoStatico1.draggable()
+
+    
+
    
+
+    
+    
+    // Dimensione della griglia (ad esempio, 50px)
+    const gridSize = 50;
+
+// Disegna la griglia con la funzione drawGrid()
+    this.drawGrid(this.draw, this.vb_min_x, this.vb_min_y, this.vb_width, this.vb_height, gridSize);
+
+
     // evento di selezione dell'elemento
     this.draw.on('dblclick', (e: any)=>{
       
@@ -89,7 +128,7 @@ export class AppComponent implements AfterViewInit {
     
   }
 
-  
+  /*
   provaZoom(e: any){
       // console.log(e.deltaY)
       const dir = Math.sign(e.deltaY)
@@ -103,7 +142,7 @@ export class AppComponent implements AfterViewInit {
         lista.forEach((e: { transform: (arg0: { scale: number; }) => any; })=>{e.transform({scale: this.zoomIn})})
       
   }
-
+*/
  
   //++++++++++++++ Event handlers bottoni oggetti +++++++++++++++++++
 
@@ -468,6 +507,17 @@ export class AppComponent implements AfterViewInit {
 
         }
 
+        creaTesto(){
+
+          const text = this.draw.text("CIAO")
+          text.font({ size: 50 })
+          text.fill("black")
+          text.move(50, 50)
+          text.transform({rotate: 45})
+          text.draggable()
+          
+        }
+
 
 
      //++++++++++++++ Event handlers bottoni manipolazione +++++++++++++++++++
@@ -524,6 +574,8 @@ export class AppComponent implements AfterViewInit {
   // @ts-ignore
         elemento.transform(trasformazioni);
       }
+
+      
   
       // Gestione del colore come prima
       if(elemento.attr('fill') === 'grey'){
@@ -622,76 +674,68 @@ elemento.transform(trasformazioni);
     if(elemento instanceof(Line)){
         elemento.stroke({ color: 'rgb(225, 255, 0)'})
     }
+  
 
 
 
+  var trasformazioni = elemento.transform();  
+
+  console.log("Elemento: ", elemento, "Trasformazioni: ", trasformazioni)
+
+
+  if(elemento instanceof Rect){
+    var rect  = this.draw.rect(100, 100).attr({ fill: 'rgb(0, 255, 255)' })
+    rect.transform(trasformazioni)
+    rect.move(500, 500)
+    // @ts-ignore
+    rect.draggable()
+  } else if(elemento instanceof G){
+    // @ts-ignore
+          // Clona il gruppo
+          const gruppoClone = elemento.clone();  // Clona l'intero gruppo
+
+          console.log("G clone children: ", gruppoClone.children()); // Usa .children() per ottenere gli oggetti SVG
+          
+             // Crea un gruppo per contenere tutti gli elementi del cassone "width": 167.1, "height": 100.32
+             const cassoneGroup2 = this.draw.group();
+
+
+          // Accedi agli elementi specifici (ad esempio, text e path) all'interno del gruppo
+          const [text, path] = gruppoClone.children(); // Estrai gli elementi figli
+          
+         
+
+             
+             
+
+          text.transform(trasformazioni)
+          path.transform(trasformazioni)
+          // @ts-ignore
+          text.move(path.x, path.y)
+
+          this.draw.add(text)
+          this.draw.add(path)
+
+          // Rendi gli elementi trascinabili
+          // @ts-ignore
+          text.draggable();
+          // @ts-ignore
+          path.draggable();
+   
+  } else {
+    // @ts-ignore
+    var clone = elemento.clone(true)
+    console.log("Clone: ", clone)
+    clone.transform(trasformazioni)
+    this.draw.add(clone)
+    // @ts-ignore
+    clone.draggable()
+  }
+
+  /*
 
   console.log("Larghezza elemento", elemento.width())
 
-  
-/*
-  if(elemento instanceof G){
-    console.log("Instanza di gruppo")
-    
-
-
-
-     // @ts-ignore
-     //console.log(clone.node.childNodes[1].attributes.x.value)
-     const originalTransform = elemento.transform();
-     //originalTransform.originX = 500
-     // originalTransform.originY = 700
-     var clone = elemento.clone(true);
-     // @ts-ignore
-     console.log("Elemento Gruppo: ", elemento.node.childNodes[1].attributes.x.nodeValue)
-     // @ts-ignore
-     console.log(clone.node.childNodes[1].attributes.x.value)
-    console.log("Trasformazione originale:", originalTransform)
-    clone.transform(originalTransform); // Applica la stessa trasformazione al clone
-    
-  
-
-       // @ts-ignore
-       clone.draggable()
-       this.draw.add(clone)
-       // clone.move(500, 500)
-
-
-      
-      // Crea un nuovo gruppo per contenere il clone
-    const clonedGroup = this.draw.group();
-
-    console.log(elemento.children()[1].node.attributes[1].value)
-    
-
-    //elemento.children()[1].node.attributes[1].value = "500"
-
-
-
-    // Clona ogni figlio del gruppo
-    elemento.children().forEach((child: any) => {
-      console.log(child) 
-      const originalTransform = child.transform();
-      console.log(originalTransform)
-      const clonedChild = child.clone();
-      clonedChild.transform(originalTransform)
-      clonedGroup.add(clonedChild);
-
-      
-    });
-
-
-
-
-    clonedGroup.draggable();
-
-    this.draw.add(clonedGroup);
-    this.selectedElement = clonedGroup; // Salva il clone come elemento selezionato
-
-
-  }
-
-  */
 
   if(this.rotation == 0){
     var clone = elemento.clone(true);
@@ -906,7 +950,7 @@ elemento.transform(trasformazioni);
 
   } 
 
-  
+  */
 
   }
 
@@ -1034,206 +1078,52 @@ elemento.transform(trasformazioni);
 
   zoommaOut() {
 
-    //this.edistance = 0;
+  
+    this.vb_width += 100;
+    this.vb_height += 100; 
+    this.draw.viewbox(this.vb_min_x, this.vb_min_y, this.vb_width, this.vb_height)
+
+    
+
      
-    console.log("Elementi nel draw:", this.draw.children())
-    this.zoomOut -= 0.3
-
-    
-
-      // Ottieni il centro dell'area di disegno (pivot)
-    const centerX = this.draw.node.width.baseVal.value / 2;
-    const centerY = this.draw.node.height.baseVal.value / 2;
-
-
-    
-
-    //let origine =  this.draw.circle(10).attr({fill: 'rgb(255, 0, 247)'})
-    //origine.transform({origin: [centerX, centerY]})
-    //origine.move(centerX - 5, centerY -5)
-
-    console.log(this.draw)
-    let lista = this.draw.children()
-
-   
-    
-
-      
-
-      // Calcola la distanza iniziale
-      const dxog = lista[0].cx() - lista[1].cx();
-      const dyog = lista[0].cy() - lista[1].cy();
-
-      let distTraOggetti = Math.sqrt(Math.pow(lista[0].cx()-lista[1].cx(), 2) + Math.pow(lista[0].cy()-lista[1].cy(), 2))
-      let newDistOg = distTraOggetti * this.zoomOut
-       // Calcola le nuove coordinate dell'elemento mantenendo l'angolo rispetto all'origine
-       const angleOg = Math.atan2(dyog, dxog);
-      const newCXO0 = lista[0].cx() + newDistOg * Math.cos(angleOg);
-      const newCYO0 = lista[0].cy()+ newDistOg * Math.sin(angleOg);
-      const newCXO1 = lista[1].cx() + newDistOg * Math.cos(angleOg);
-      const newCYO1 = lista[1].cy()+ newDistOg * Math.sin(angleOg);
-
-     // lista[0].move(newCXO0, newCYO0).transform({ scale: this.zoomOut });
-      //lista[1].move(newCXO1, newCYO1).transform({ scale: this.zoomOut })
-
-    for(let i = 0; i<= lista.length -1; i++){
-      // @ts-ignore
-      this.edistance = Math.sqrt(Math.pow(lista[i].cx()-centerX, 2) + Math.pow(lista[i].cy()-centerY, 2))
-          // @ts-ignore
-          const dxor = lista[i].cx() - centerX;
-          // @ts-ignore
-          const dyor = lista[i].cy() - centerY;
-
-          // Calcola le nuove coordinate dell'elemento mantenendo l'angolo rispetto all'origine
-        const angleOr = Math.atan2(dyor, dxor);
-
-           // Calcola le nuove coordinate dell'elemento mantenendo l'angolo rispetto all'origine
-           const angleOg = Math.atan2(dyog, dxog);
-
-      let newDistOr = this.edistance * this.zoomOut
-      let newDistOg = distTraOggetti * this.zoomOut
-
-
-      const newCX = centerX + newDistOr * Math.cos(angleOr);
-      const newCY = centerY + newDistOr * Math.sin(angleOr);
-
-      
-
-      // Applica il nuovo posizionamento all'elemento
-      lista[i].move(newCX, newCY).transform({ scale: this.zoomOut});
-
-      
-      
-      // @ts-ignore
-      console.log("Vediamo: center", lista[i].type, lista[i].cx(), lista[i].cy(), "distanza dall'origine", this.edistance, "distanza tra gli oggetti", distTraOggetti, "distanza dall'origine scalata:", newDistOr, "distanza tra gli oggetti scalata:",  newDistOg, "angolo tra gli oggetti e l'origine:",  angleOr, "angolo tra gli oggetti:", angleOg)
-
-      
-      
-    }  
-
-    lista.forEach((e: { transform: (arg0: { scale: number; }) => any; })=>{
-      this.edistance = 0;
-      
-      
-      
-        //e.transform({scale: this.zoomOut>0.1? this.zoomOut: 0.1})
-
-        
-        
-        
-        // @ts-ignore
-        //this.linee = this.draw.line(e.cx(), e.cy(), centerX, centerY).stroke({ width: 1, color: "black" })
-        //this.linee
-        // @ts-ignore
-        //let distance = Math.abs(e.cx()-centerX)
-  
-  
-        // la formula della distanza euclidea
-        // @ts-ignore
-        this.edistance = Math.sqrt(Math.pow(e.cx()-centerX, 2) + Math.pow(e.cy()-centerY, 2))
-        // Calcola la distanza iniziale
-        // @ts-ignore
-        //const dx = e.cx() - centerX;
-        // @ts-ignore
-        //const dy = e.cy() - centerY;
-        //const distance = Math.sqrt(dx * dx + dy * dy);
-
-  
-        /*
-        
-        // @ts-ignore
-        let text = this.draw.text(this.edistance)
-        .font({ size: 11.5 })
-        .fill('black')
-        // @ts-ignore
-        .transform({position: [this.linee.cx(), this.linee.cy()]}) 
-  
-        //text
-
-        */
-        //text
-        //console.log(this.linee)
-  
-        // @ts-ignore
-        console.log("Coordinate di", e.type, ": ", "[", e.cx(), e.cy(), "]")
-        // @ts-ignore
-        console.log("Distanza dal centro di", e.type, ":", [e.cx(), e.cy()], [centerX, centerY], this.edistance)
-      
-     
-
-  })
-
-  console.log("Coordinate del centro del draw:", "[", centerX, centerY, "]")
 
     }
   
   zoommaIn() {
 
     
-    this.zoomIn += 0.3
-   
+    this.vb_width -= 100;
+    this.vb_height -= 100; 
 
-       // Ottieni il centro dell'area di disegno (pivot)
-       const centerX = this.draw.node.width.baseVal.value / 2;
-       const centerY = this.draw.node.height.baseVal.value / 2;
+    this.draw.viewbox(this.vb_min_x, this.vb_min_y, this.vb_width, this.vb_height)
 
-
-    let lista = this.draw.children()
-    // lista.forEach((e: { transform: (arg0: { scale: number; }) => any; })=>{e.transform({scale: this.zoomIn})})
-
-    // Calcola la distanza iniziale
-    const dxog = lista[0].cx() - lista[1].cx();
-    const dyog = lista[0].cy() - lista[1].cy();
-
-    let distTraOggetti = Math.sqrt(Math.pow(lista[0].cx()-lista[1].cx(), 2) + Math.pow(lista[0].cy()-lista[1].cy(), 2))
-    let newDistOg = distTraOggetti * this.zoomIn
-     // Calcola le nuove coordinate dell'elemento mantenendo l'angolo rispetto all'origine
-     const angleOg = Math.atan2(dyog, dxog);
-    const newCXO0 = lista[0].cx() + newDistOg * Math.cos(angleOg);
-    const newCYO0 = lista[0].cy()+ newDistOg * Math.sin(angleOg);
-    const newCXO1 = lista[1].cx() + newDistOg * Math.cos(angleOg);
-    const newCYO1 = lista[1].cy()+ newDistOg * Math.sin(angleOg);
-
-   // lista[0].move(newCXO0, newCYO0).transform({ scale: this.zoomIn });
-    //lista[1].move(newCXO1, newCYO1).transform({ scale: this.zoomIn })
-
-  for(let i = 0; i<= lista.length -1; i++){
-    // @ts-ignore
-    this.edistance = Math.sqrt(Math.pow(lista[i].cx()-centerX, 2) + Math.pow(lista[i].cy()-centerY, 2))
-        // @ts-ignore
-        const dxor = lista[i].cx() - centerX;
-        // @ts-ignore
-        const dyor = lista[i].cy() - centerY;
-
-        // Calcola le nuove coordinate dell'elemento mantenendo l'angolo rispetto all'origine
-      const angleOr = Math.atan2(dyor, dxor);
-
-         // Calcola le nuove coordinate dell'elemento mantenendo l'angolo rispetto all'origine
-         const angleOg = Math.atan2(dyog, dxog);
-
-    let newDistOr = this.edistance * this.zoomIn
-    let newDistOg = distTraOggetti * this.zoomIn
-
-
-    const newCX = centerX + newDistOr * Math.cos(angleOr);
-    const newCY = centerY + newDistOr * Math.sin(angleOr);
-
-    
-
-    // Applica il nuovo posizionamento all'elemento
-    lista[i].move(newCX, newCY).transform({ scale: this.zoomIn });
-
-    
-    
-    // @ts-ignore
-    console.log("Vediamo: center", lista[i].type, lista[i].cx(), lista[i].cy(), "distanza dall'origine", this.edistance, "distanza tra gli oggetti", distTraOggetti, "distanza dall'origine scalata:", newDistOr, "distanza tra gli oggetti scalata:",  newDistOg, "angolo tra gli oggetti e l'origine:",  angleOr, "angolo tra gli oggetti:", angleOg)
-
-    
-    
-  }  
-
-    
+    console.log(this.vb_width, this.vb_height)
   
+  
+  }
+
+  vaiASin(){
+
+    this.vb_min_x += 100;
+    this.draw.viewbox(this.vb_min_x, this.vb_min_y, this.vb_width, this.vb_height);
+
+  }
+
+  vaiADes(){
+
+    this.vb_min_x -= 100;
+    this.draw.viewbox(this.vb_min_x, this.vb_min_y, this.vb_width, this.vb_height);
+
+  }
+
+  vaiUp() {
+    this.vb_min_y += 100;
+    this.draw.viewbox(this.vb_min_x, this.vb_min_y, this.vb_width, this.vb_height);
+  }
+
+  vaiDown() {
+    this.vb_min_y -= 100;
+    this.draw.viewbox(this.vb_min_x, this.vb_min_y, this.vb_width, this.vb_height);
   }
 
   blocca(){
@@ -1246,6 +1136,75 @@ elemento.transform(trasformazioni);
     lista.forEach((e: { draggable: (arg0: boolean) => any; })=>e.draggable(true))
   
   }
+
+
+  // funzione che disegna e aggiorna la griglia
+
+  drawGrid(draw: any, vb_min_x: any, vb_min_y: any, vb_width: any, vb_height: any, gridSize: any) {
+    // Pulisce eventuali griglie precedenti
+    draw.clear();
+    
+    // Estendi la griglia per essere molto più grande della vista del viewBox
+    const extendedWidth = vb_width * 4;  // Quattro volte la larghezza del viewBox
+    const extendedHeight = vb_height * 4; // Quattro volte l'altezza del viewBox
+    
+    // Calcola il numero di linee orizzontali e verticali
+    const verticalLinesCount = Math.floor(extendedWidth / gridSize);
+    const horizontalLinesCount = Math.floor(extendedHeight / gridSize);
+
+    // Disegna le linee verticali
+    for (let i = 0; i <= verticalLinesCount; i++) {
+        const x = vb_min_x + i * gridSize;
+        draw.line(x, vb_min_y, x, vb_min_y + extendedHeight).stroke({ color: '#cccccc', width: 1, dasharray: '2,2' });
+        if (x % 5 === 0 && x !== 6150){
+          draw.text(x)
+          .font({ size: 10 })
+          .move(x, 0)
+          .fill('black');  
+
+          draw.text(x)
+          .font({ size: 10 })
+          .move(x, vb_min_y + extendedHeight)
+          .fill('black');
+
+        } else if (x === 6150){
+          draw.text()
+          .font({ size: 10 })
+          .move(x, 0)
+          .fill('black');
+        }
+    }
+
+    // Disegna le linee orizzontali
+    for (let i = 0; i <= horizontalLinesCount; i++) {
+        const y = vb_min_y + i * gridSize;
+        draw.line(vb_min_x, y, vb_min_x + extendedWidth, y).stroke({ color: '#cccccc', width: 1, dasharray: '2,2' });
+        if (y % 5 === 0 && y !== 4000){
+          draw.text(y)
+          .font({ size: 10 })
+          .move(0, y)
+          .fill('black'); 
+
+          draw.text(y)
+          .font({ size: 10 })
+          .move(vb_min_x + extendedWidth, y)
+          .fill('black');
+        
+
+        } else if(y === 4000) {
+
+          draw.text(0)
+          .font({ size: 10 })
+          .move(0, y)
+          .fill('black'); 
+
+          draw.text(0)
+          .font({ size: 10 })
+          .move(vb_min_x + extendedWidth, y)
+          .fill('black');
+        }
+      }
+}
     
 
 }

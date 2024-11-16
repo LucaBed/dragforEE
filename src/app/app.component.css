@@ -31,9 +31,33 @@
 .svg{
     flex: 3;
     padding-top: 10px;
+    z-index: 0;
+    background-color: rgb(153, 153, 153);
 }
 
+.frecce {
+    
+    position: absolute;
+    display: flex;
+    bottom: 20px; /* Distanza dal basso della pagina */
+    right: 10%; /* Distanza da destra della pagina */
+    align-items: center;
+    gap: 10px;
+    z-index: 10;
+}
 
+.frecce button{
+    background-color: transparent;
+    width: 30px;
+    height: 30px;
+    
+}
+
+.frecceAlCentro {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
 
 .button-container-comandi{
     display: flex;
